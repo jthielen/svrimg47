@@ -15,7 +15,7 @@ SVRIMG-47 consists of data reprocessed from a variety of source NEXRAD-derived d
 - [MYRORSS](https://osf.io/8f4v2/) (for 1998-2011 only)
 - GridRad-Severe (2011 only to begin, will fill in upon public release)
 - Archived MRMS (excluded to begin, will fill in upon archived product contributions)
-- Custom mosiacs using [OpenMosaic](https://github.com/jthielen/OpenMosaic) (full 1998-2019 period)
+- Custom mosiacs using [OpenMosaic](https://github.com/jthielen/OpenMosaic) (full 2000-2019 study period)
 
 All products are regridded from their original grids to a uniform 2km Lambert Conformal grid (except for OpenMosaic products, which directly grid the Level II data onto this target grid). CF attributes for this grid mapping are:
 
