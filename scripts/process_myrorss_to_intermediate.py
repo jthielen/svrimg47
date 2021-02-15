@@ -259,7 +259,7 @@ if __name__ == '__main__':
             'units': 'km'
         }
         ds.low_level_rotation_track.attrs = {
-            'long_name': 'hourly_maximum_of_azimuthal_shear_in_0_to_2_km_agl_layer',
+            'long_name': 'hourly_maximum_of_azimuthal_shear_in_0_to_3_km_agl_layer',
             'units': 's-1'
         }
         ds.mid_level_rotation_track.attrs = {
