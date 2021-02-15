@@ -182,30 +182,31 @@ if __name__ == '__main__':
     for hour in analysis_hours:
         print(f"\t{hour}")
     print("\n")
-    
-    # Make local dir
-    subprocess.run(["mkdir", f"{convective_day:%Y%m%d}"])
 
-    # Download main archive
-    subprocess.run(["wget", orig_tar_url.format(dt=convective_day)])
+    if not os.path.isdir(f"{convective_day:%Y%m%d}"):
+        # Make local dir
+        subprocess.run(["mkdir", f"{convective_day:%Y%m%d}"])
 
-    # Extract SVRIMG47 fields from main archive
-    subprocess.run(["tar", "-xvf", f"{convective_day:%Y%m%d}.tar", "-C", f"{convective_day:%Y%m%d}", "EchoTop_18", "MergedReflectivityQCComposite"])
+        # Download main archive
+        subprocess.run(["wget", orig_tar_url.format(dt=convective_day)])
 
-    # Remove old tar
-    subprocess.run(["rm", f"{convective_day:%Y%m%d}.tar"])
+        # Extract SVRIMG47 fields from main archive
+        subprocess.run(["tar", "-xvf", f"{convective_day:%Y%m%d}.tar", "-C", f"{convective_day:%Y%m%d}", "EchoTop_18", "MergedReflectivityQCComposite"])
 
-    # Download azshear products
-    subprocess.run(["wget", azshear_tar_url.format(dt=convective_day)])
+        # Remove old tar
+        subprocess.run(["rm", f"{convective_day:%Y%m%d}.tar"])
 
-    # Extract SVRIMG47 fields from secondary archive
-    subprocess.run(["tar", "-xvf", f"{convective_day:%Y%m%d}.tar", "-C", f"{convective_day:%Y%m%d}", "MergedLLShear", "MergedMLShear"])
+        # Download azshear products
+        subprocess.run(["wget", azshear_tar_url.format(dt=convective_day)])
 
-    # Remove old tar
-    subprocess.run(["rm", f"{convective_day:%Y%m%d}.tar"])
+        # Extract SVRIMG47 fields from secondary archive
+        subprocess.run(["tar", "-xvf", f"{convective_day:%Y%m%d}.tar", "-C", f"{convective_day:%Y%m%d}", "MergedLLShear", "MergedMLShear"])
 
-    # Unzip any zipped files from the archives
-    subprocess.run(["gunzip", f"{convective_day:%Y%m%d}/*/00.25/*.netcdf.gz"])
+        # Remove old tar
+        subprocess.run(["rm", f"{convective_day:%Y%m%d}.tar"])
+
+        # Unzip any zipped files from the archives
+        subprocess.run(["gunzip", "-v"] + glob.glob(f"{temp_myrorss_dir}{convective_day:%Y%m%d}/*/00.25/*.netcdf.gz"))
 
     ######################
     # Analysis Hour Loop #
@@ -228,7 +229,8 @@ if __name__ == '__main__':
             )()
 
             # Regrid, hiding warnings like not F_CONTIGOUS
-            with warnings.simplefilter("ignore"):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
                 regridder = xe.Regridder(
                     field_coarsened.to_dataset(name=field_control[field]['rename']),
                     ds_target,
@@ -252,19 +254,23 @@ if __name__ == '__main__':
         ds = ds.drop_vars(['lat', 'lon'])
         ds.reflectivity.attrs = {
             'long_name': 'column_maximum_of_equivalent_reflectivity_factor',
-            'units': 'dBZ'
+            'units': 'dBZ',
+            "grid_mapping": "projection"
         }
         ds.echo_top_height.attrs = {
             'long_name': 'maximum_height_of_18_dBZ_reflectivity',
-            'units': 'km'
+            'units': 'km',
+            "grid_mapping": "projection"
         }
         ds.low_level_rotation_track.attrs = {
             'long_name': 'hourly_maximum_of_azimuthal_shear_in_0_to_3_km_agl_layer',
-            'units': 's-1'
+            'units': 's-1',
+            "grid_mapping": "projection"
         }
         ds.mid_level_rotation_track.attrs = {
             'long_name': 'hourly_maximum_of_azimuthal_shear_in_3_to_6_km_agl_layer',
-            'units': 's-1'
+            'units': 's-1',
+            "grid_mapping": "projection"
         }
 
         ds = ds.expand_dims('time')
@@ -293,4 +299,7 @@ if __name__ == '__main__':
             ds.to_zarr(zarr_store, encoding=encoding, consolidated=True)
 
         print("\t\t...all fields saved to zarr")
+
+    # Remove temporary directory to save space
+    subprocess.run(["rm", "-r", f"{convective_day:%Y%m%d}"])
 
