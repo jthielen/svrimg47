@@ -169,6 +169,9 @@ if __name__ == '__main__':
     except (SystemExit, ValueError):
         parser.print_help()
         raise
+    except (KeyError):
+        print(f"{convective_day:%Y-%m-%d} has no severe report data to load, so skip...")
+        sys.exit(0)
 
     ################################
     # Data Download and Extraction #
