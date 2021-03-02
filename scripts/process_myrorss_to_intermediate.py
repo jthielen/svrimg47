@@ -156,6 +156,9 @@ if __name__ == '__main__':
     parser.add_argument(
         "-H", "--hour-file", help="JSON file mapping convective days to hours to extract", default="~/research/severe_report_hours.json"
     )
+    parser.add_argument(
+        "-L", "--local-dir", help="If using local repackaged archives, specify location here", default=""
+    )
 
     try:
         args = parser.parse_args()
@@ -166,6 +169,7 @@ if __name__ == '__main__':
         weight_file = args.regridder_weights
         with open(args.hour_file, "r") as hour_file:
             analysis_hours = json.load(hour_file)[f"{convective_day:%Y-%m-%d}"]
+        local_dir = args.local_dir
     except (SystemExit, ValueError):
         parser.print_help()
         raise
@@ -186,7 +190,16 @@ if __name__ == '__main__':
         print(f"\t{hour}")
     print("\n")
 
-    if not os.path.isdir(f"{convective_day:%Y%m%d}"):
+    if local_dir:
+        # Make local dir
+        subprocess.run(["mkdir", f"{convective_day:%Y%m%d}"])
+
+        # Extract SVRIMG47 fields from sole archive
+        subprocess.run(["tar", "-xvf", f"{local_dir}{convective_day:%Y%m%d}_reduced.tar.gz"])
+
+        # Unzip any zipped files from the archives
+        subprocess.run(["gunzip", "-v"] + glob.glob(f"{temp_myrorss_dir}{convective_day:%Y%m%d}/*/00.25/*.netcdf.gz"))
+    elif not os.path.isdir(f"{convective_day:%Y%m%d}"):
         # Make local dir
         subprocess.run(["mkdir", f"{convective_day:%Y%m%d}"])
 
@@ -217,6 +230,13 @@ if __name__ == '__main__':
 
     for hour in analysis_hours:
         timestamp = pd.Timestamp(hour)
+        zarr_store = f"{output_dir}subset_{timestamp:%Y}.zarr/"
+        if os.path.isdir(zarr_store):
+            # Check for hour existance in zarr store
+            output_zarr_ds = xr.open_zarr(zarr_store, consolidated=True)
+            if timestamp in output_zarr_ds.time.to_series():
+                print(f"\t{timestamp} already in output...skipping...")
+                continue
         print(f"\tRegridding {timestamp}")
         collected_fields = []
         for field in field_control:
@@ -278,7 +298,6 @@ if __name__ == '__main__':
 
         ds = ds.expand_dims('time')
 
-        zarr_store = f"{output_dir}subset_{timestamp:%Y}.zarr/"
         if os.path.isdir(zarr_store):
             # Zarr store exists, simply append
             ds.to_zarr(zarr_store, append_dim="time", consolidated=True)
