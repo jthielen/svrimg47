@@ -1,21 +1,23 @@
-# SVRIMG-47: Detailed Convective Morphology Samples from NEXRAD Mosaics
+# SVRIMG-DM: Detailed Convective Morphology Samples from NEXRAD Mosaics
 
-A complementary effort to the original [SVRIMG](http://www.svrimg.org/) by Alex Haberlie (LSU) and collaborators for detailed storm classification.
+A complementary effort to the original [SVRIMG](http://www.svrimg.org/) by Alex Haberlie (NIU) and collaborators for detailed storm classification.
+
+*This repository is in a state of transition from its original design as "SVRIMG-47" (as used in [this work](https://www.proquest.com/pqdtglobal/docview/2575792067/82C6A887E9FE4DB6PQ)) to the expanded (and less tied to a single-label classification) SVRIMG-DM (as described [here](https://svrimgdm.thielen.science/about.html)).*
 
 ## Summary
 
-This repository contains the work-in-progress code powering the generation of the SVRIMG-47 dataset and sample images as well as the labeling web application. Data analysis utilties are planned for inclusion in the near future, as is more detailed description in this repository and accompanying website.
+This repository contains the work-in-progress code powering the generation of the SVRIMG-DM (formerly SVRIMG-47) dataset and sample images as well as the labeling web application. Data analysis utilties are planned for inclusion in the near future, as is more detailed description in this repository and accompanying website.
 
 For a prelimary description of the dataset and the philosophy behind it, see [the informal dataset proposal here](https://hackmd.io/@jthielen/morphology_dataset).
 
 ## Source Datasets
 
-SVRIMG-47 consists of data reprocessed from a variety of source NEXRAD-derived data products:
+SVRIMG-DM consists of data reprocessed from a variety of source NEXRAD-derived data products:
 
-- [MYRORSS](https://osf.io/8f4v2/) (for 1998-2011 only)
-- GridRad-Severe (2011 only to begin, will fill in upon public release)
+- [MYRORSS](https://osf.io/8f4v2/) (for 2001-2011 only)
+- GridRad-Severe (2010-11 only to begin, will fill in upon public release)
 - Archived MRMS (excluded to begin, will fill in upon archived product contributions)
-- Custom mosiacs using [OpenMosaic](https://github.com/jthielen/OpenMosaic) (full 2000-2019 study period)
+- Custom mosiacs using [OpenMosaic](https://github.com/jthielen/OpenMosaic) (full 2001-2020 study period)
 
 All products are regridded from their original grids to a uniform 2km Lambert Conformal grid (except for OpenMosaic products, which directly grid the Level II data onto this target grid). CF attributes for this grid mapping are:
 
